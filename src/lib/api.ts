@@ -49,7 +49,7 @@ export function getApiBaseUrl(): string {
   return (
     import.meta.env.VITE_KKR_API_BASE?.replace(/\/$/, "") ||
     import.meta.env.VITE_BACKEND_URL?.replace(/\/$/, "") ||
-    ""
+    "https://kkr-travel-production.up.railway.app"
   );
 }
 
@@ -72,13 +72,7 @@ export async function fetchReferralPeek(code: string): Promise<ReferralPeek | nu
       reward_credits: Number(data.reward_credits || 1000),
     };
   } catch {
-    // In offline or local preview, provide fallback
-    return {
-      valid: true,
-      code,
-      inviter_name: "друга",
-      reward_credits: 1000,
-    };
+    return null;
   }
 }
 
@@ -86,6 +80,10 @@ export interface UserSession {
   token: string;
   name?: string;
   email?: string;
+  isNewUser?: boolean;
+  referralStatus?: "self_referral" | "already_registered" | "registered_web" | "rewarded" | string | null;
+  referralMessage?: string | null;
+  inviterName?: string | null;
 }
 
 export function getStoredUser(): UserSession | null {

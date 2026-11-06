@@ -25,7 +25,10 @@ async function sha256Base64Url(input: string): Promise<string> {
 }
 
 export function googleClientId(): string {
-  return import.meta.env.VITE_GOOGLE_OAUTH_CLIENT_ID?.trim() ?? "";
+  return (
+    import.meta.env.VITE_GOOGLE_OAUTH_CLIENT_ID?.trim() ||
+    "880442601175-qq11oc9mhh7m4h08tngh2bad65497rog.apps.googleusercontent.com"
+  );
 }
 
 export function googleRedirectUri(): string {
@@ -34,18 +37,6 @@ export function googleRedirectUri(): string {
 
 export async function beginGoogleLogin(): Promise<void> {
   const clientId = googleClientId();
-  if (!clientId) {
-    // When client ID is not configured (e.g. dev/preview without secrets), provide a smooth mock simulation
-    console.warn("VITE_GOOGLE_OAUTH_CLIENT_ID not configured, simulating auth");
-    const mockUser = {
-      token: "mock-token-" + Date.now(),
-      name: "Друг",
-      email: "friend@example.com",
-    };
-    window.location.href = `${window.location.pathname}?auth_success=1&user_name=${encodeURIComponent(mockUser.name)}`;
-    return;
-  }
-
   const verifier = randomUrlSafe(32);
   const state = randomUrlSafe(16);
   const challenge = await sha256Base64Url(verifier);
@@ -69,7 +60,18 @@ export async function beginGoogleLogin(): Promise<void> {
   );
 }
 
-export async function exchangeGoogleCode(code: string, state: string): Promise<{ token: string; name?: string }> {
+export async function exchangeGoogleCode(
+  code: string,
+  state: string,
+): Promise<{
+  token: string;
+  name?: string;
+  email?: string;
+  isNewUser?: boolean;
+  referralStatus?: string | null;
+  referralMessage?: string | null;
+  inviterName?: string | null;
+}> {
   const expectedState = sessionStorage.getItem(PKCE_STATE_KEY);
   const codeVerifier = sessionStorage.getItem(PKCE_VERIFIER_KEY);
 
@@ -106,6 +108,11 @@ export async function exchangeGoogleCode(code: string, state: string): Promise<{
   const data = await res.json();
   return {
     token: data.accessToken || data.token || "token",
-    name: data.user?.displayName || data.user?.name,
+    name: data.profile?.displayName || data.user?.displayName || data.user?.name,
+    email: data.profile?.email,
+    isNewUser: data.isNewUser,
+    referralStatus: data.referralStatus,
+    referralMessage: data.referralMessage,
+    inviterName: data.inviterName,
   };
 }

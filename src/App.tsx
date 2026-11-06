@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Download } from "lucide-react";
+import { Check, Copy, Download } from "lucide-react";
 import { AppleMarkWhite, GoogleMarkWhite } from "./components/AuthIosIcons";
 import { IosGlassPillStack } from "./components/IosGlassPillStack";
 import {
@@ -8,6 +8,7 @@ import {
   storeReferralCode,
   fetchReferralPeek,
   type ReferralPeek,
+  type UserSession,
   getStoredUser,
   saveUserSession,
   TESTFLIGHT_URL,
@@ -18,7 +19,8 @@ export const App: React.FC = () => {
   const [peekData, setPeekData] = useState<ReferralPeek | null>(null);
   const [authLoading, setAuthLoading] = useState<boolean>(false);
   const [authError, setAuthError] = useState<string | null>(null);
-  const [authenticatedUser, setAuthenticatedUser] = useState<{ name?: string } | null>(null);
+  const [copied, setCopied] = useState<boolean>(false);
+  const [authenticatedUser, setAuthenticatedUser] = useState<UserSession | null>(null);
   const [legalModal, setLegalModal] = useState<"privacy" | "terms" | null>(null);
 
   useEffect(() => {
@@ -33,22 +35,21 @@ export const App: React.FC = () => {
     const params = new URLSearchParams(window.location.search);
     const authCode = params.get("code");
     const authState = params.get("state");
-    const authSuccess = params.get("auth_success");
-    const userNameParam = params.get("user_name");
-
-    if (authSuccess) {
-      const user = { name: userNameParam ? decodeURIComponent(userNameParam) : "Друг" };
-      saveUserSession({ token: "token", name: user.name });
-      setAuthenticatedUser(user);
-      return;
-    }
 
     if (authCode && authState) {
       setAuthLoading(true);
       exchangeGoogleCode(authCode, authState)
         .then((res) => {
-          const user = { name: res.name || "Друг" };
-          saveUserSession({ token: res.token, name: user.name });
+          const user: UserSession = {
+            token: res.token,
+            name: res.name || "Друг",
+            email: res.email,
+            isNewUser: res.isNewUser,
+            referralStatus: res.referralStatus,
+            referralMessage: res.referralMessage,
+            inviterName: res.inviterName,
+          };
+          saveUserSession(user);
           setAuthenticatedUser(user);
           window.history.replaceState({}, document.title, window.location.pathname);
         })
@@ -88,13 +89,8 @@ export const App: React.FC = () => {
   };
 
   const handleAppleClick = () => {
-    setAuthLoading(true);
-    setTimeout(() => {
-      const user = { name: "Пользователь Apple" };
-      saveUserSession({ token: "apple-token-" + Date.now(), name: user.name });
-      setAuthenticatedUser(user);
-      setAuthLoading(false);
-    }, 450);
+    // Apple ID sign-in is native to iOS: redirect directly to TestFlight to install and sign in on device
+    window.location.href = TESTFLIGHT_URL;
   };
 
   const inviterName = peekData?.inviter_name || null;
@@ -116,28 +112,94 @@ export const App: React.FC = () => {
       {/* Bottom Section: Pure White Card */}
       <div className="w-full flex-shrink-0 bg-white px-7 pt-4 pb-8 sm:pb-10 flex flex-col items-center max-w-md mx-auto">
         {authenticatedUser ? (
-          /* Post-Authentication Success Screen -> Install App (TestFlight) */
+          /* Post-Authentication Screen -> State-dependent */
           <div className="w-full flex flex-col items-center text-center py-2 animate-in fade-in duration-300">
-            <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#00FFA3]/20 text-[#008A55] font-semibold text-[13px] mb-3">
-              <span>✓</span>
-              <span>+{rewardAmount.toLocaleString("ru-RU")} бонусов зачислено</span>
-            </div>
+            {authenticatedUser.referralStatus === "self_referral" ? (
+              <>
+                <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#402BFF]/10 text-[#402BFF] font-semibold text-[13px] mb-3">
+                  <span>ℹ️</span>
+                  <span>Ваша реферальная ссылка</span>
+                </div>
 
-            <h2 className="text-[22px] font-bold tracking-tight text-[#0B0B0E] mb-1">
-              {authenticatedUser.name ? `Привет, ${authenticatedUser.name}!` : "Всё готово!"}
-            </h2>
+                <h2 className="text-[22px] font-bold tracking-tight text-[#0B0B0E] mb-1">
+                  Вы уже в 8ty!
+                </h2>
 
-            <p className="text-[14px] text-[#6E6E73] mb-5 leading-snug">
-              Установите приложение 8ty для iOS и войдите в аккаунт, чтобы продолжить.
-            </p>
+                <p className="text-[14px] text-[#6E6E73] mb-5 leading-snug max-w-[320px]">
+                  Это ваша личная ссылка. Поделитесь ею с друзьями, чтобы получать по {rewardAmount.toLocaleString("ru-RU")} бонусов за каждого приглашённого!
+                </p>
 
-            <a
-              href={TESTFLIGHT_URL}
-              className="w-full h-[54px] rounded-full bg-[#F600FF] hover:bg-[#E000E8] active:scale-[0.98] transition-all flex items-center justify-center gap-2.5 text-white font-semibold text-[17px] shadow-lg shadow-[#F600FF]/30 cursor-pointer"
-            >
-              <Download className="w-5 h-5 stroke-[2.5]" />
-              <span>Установить приложение</span>
-            </a>
+                <div className="w-full flex flex-col gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      void navigator.clipboard.writeText(window.location.href);
+                      setCopied(true);
+                      setTimeout(() => setCopied(false), 2000);
+                    }}
+                    className="w-full h-[52px] rounded-full bg-[#402BFF] hover:bg-[#3824E5] active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-white font-semibold text-[16px] shadow-md shadow-[#402BFF]/20 cursor-pointer"
+                  >
+                    {copied ? <Check className="w-4 h-4 stroke-[2.5]" /> : <Copy className="w-4 h-4 stroke-[2]" />}
+                    <span>{copied ? "Ссылка скопирована!" : "Скопировать ссылку"}</span>
+                  </button>
+
+                  <a
+                    href={TESTFLIGHT_URL}
+                    className="w-full h-[48px] rounded-full bg-[#F2F2F7] hover:bg-[#E5E5EA] active:scale-[0.98] transition-all flex items-center justify-center gap-2 text-[#0B0B0E] font-medium text-[15px] cursor-pointer"
+                  >
+                    <Download className="w-4 h-4 stroke-[2]" />
+                    <span>Открыть приложение</span>
+                  </a>
+                </div>
+              </>
+            ) : authenticatedUser.referralStatus === "already_registered" || authenticatedUser.isNewUser === false ? (
+              <>
+                <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#FF9500]/15 text-[#C97000] font-semibold text-[13px] mb-3">
+                  <span>✓</span>
+                  <span>Аккаунт уже зарегистрирован</span>
+                </div>
+
+                <h2 className="text-[22px] font-bold tracking-tight text-[#0B0B0E] mb-1">
+                  {authenticatedUser.name ? `С возвращением, ${authenticatedUser.name}!` : "Вы уже с нами!"}
+                </h2>
+
+                <p className="text-[14px] text-[#6E6E73] mb-5 leading-snug max-w-[320px]">
+                  Вы уже зарегистрированы в 8ty. Реферальный бонус начисляется новым пользователям при первой регистрации.
+                </p>
+
+                <a
+                  href={TESTFLIGHT_URL}
+                  className="w-full h-[52px] rounded-full bg-[#402BFF] hover:bg-[#3824E5] active:scale-[0.98] transition-all flex items-center justify-center gap-2.5 text-white font-semibold text-[16px] shadow-md shadow-[#402BFF]/20 cursor-pointer"
+                >
+                  <Download className="w-4 h-4 stroke-[2]" />
+                  <span>Открыть приложение</span>
+                </a>
+              </>
+            ) : (
+              /* New user (friend) */
+              <>
+                <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#00FFA3]/20 text-[#008A55] font-semibold text-[13px] mb-3">
+                  <span>✓</span>
+                  <span>+{rewardAmount.toLocaleString("ru-RU")} бонусов зачислено</span>
+                </div>
+
+                <h2 className="text-[22px] font-bold tracking-tight text-[#0B0B0E] mb-1">
+                  {authenticatedUser.name ? `Привет, ${authenticatedUser.name}!` : "Всё готово!"}
+                </h2>
+
+                <p className="text-[14px] text-[#6E6E73] mb-5 leading-snug">
+                  Установите приложение 8ty для iOS и войдите в аккаунт, чтобы активировать бонусы.
+                </p>
+
+                <a
+                  href={TESTFLIGHT_URL}
+                  className="w-full h-[54px] rounded-full bg-[#F600FF] hover:bg-[#E000E8] active:scale-[0.98] transition-all flex items-center justify-center gap-2.5 text-white font-semibold text-[17px] shadow-lg shadow-[#F600FF]/30 cursor-pointer"
+                >
+                  <Download className="w-5 h-5 stroke-[2.5]" />
+                  <span>Установить приложение</span>
+                </a>
+              </>
+            )}
           </div>
         ) : (
           /* Native iOS Authorization Screen matching Screenshot 2 */
