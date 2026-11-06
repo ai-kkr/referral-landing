@@ -10,9 +10,9 @@ COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 
 COPY . .
-ARG VITE_GOOGLE_OAUTH_CLIENT_ID=
+ARG VITE_GOOGLE_OAUTH_CLIENT_ID=880442601175-qq11oc9mhh7m4h08tngh2bad65497rog.apps.googleusercontent.com
 ARG VITE_TESTFLIGHT_URL=https://testflight.apple.com/join/RcxSZjuP
-ARG VITE_KKR_API_BASE=
+ARG VITE_KKR_API_BASE=https://kkr-travel-production.up.railway.app
 
 ENV VITE_GOOGLE_OAUTH_CLIENT_ID=$VITE_GOOGLE_OAUTH_CLIENT_ID \
     VITE_TESTFLIGHT_URL=$VITE_TESTFLIGHT_URL \
