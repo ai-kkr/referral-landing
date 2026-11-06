@@ -176,31 +176,8 @@ export const App: React.FC = () => {
                   </a>
                 </div>
               </>
-            ) : authenticatedUser.referralStatus === "already_registered" || authenticatedUser.isNewUser === false ? (
-              <>
-                <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#FF9500]/15 text-[#C97000] font-semibold text-[13px] mb-3">
-                  <span>✓</span>
-                  <span>Аккаунт уже зарегистрирован</span>
-                </div>
-
-                <h2 className="text-[22px] font-bold tracking-tight text-[#0B0B0E] mb-1">
-                  {authenticatedUser.name ? `С возвращением, ${authenticatedUser.name}!` : "Вы уже с нами!"}
-                </h2>
-
-                <p className="text-[14px] text-[#6E6E73] mb-5 leading-snug max-w-[320px]">
-                  Вы уже зарегистрированы в 8ty. Реферальный бонус начисляется новым пользователям при первой регистрации.
-                </p>
-
-                <a
-                  href={TESTFLIGHT_URL}
-                  className="w-full h-[52px] rounded-full bg-[#402BFF] hover:bg-[#3824E5] active:scale-[0.98] transition-all flex items-center justify-center gap-2.5 text-white font-semibold text-[16px] shadow-md shadow-[#402BFF]/20 cursor-pointer"
-                >
-                  <Download className="w-4 h-4 stroke-[2]" />
-                  <span>Открыть приложение</span>
-                </a>
-              </>
-            ) : (
-              /* New user (friend) */
+            ) : authenticatedUser.referralStatus === "registered_web" || authenticatedUser.isNewUser === true ? (
+              /* New user (friend) -> +1000 bonuses! */
               <>
                 <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#00FFA3]/20 text-[#008A55] font-semibold text-[13px] mb-3">
                   <span>✓</span>
@@ -221,6 +198,30 @@ export const App: React.FC = () => {
                 >
                   <Download className="w-5 h-5 stroke-[2.5]" />
                   <span>Установить приложение</span>
+                </a>
+              </>
+            ) : (
+              /* Existing user -> Already registered */
+              <>
+                <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#FF9500]/15 text-[#C97000] font-semibold text-[13px] mb-3">
+                  <span>✓</span>
+                  <span>Аккаунт уже зарегистрирован</span>
+                </div>
+
+                <h2 className="text-[22px] font-bold tracking-tight text-[#0B0B0E] mb-1">
+                  {authenticatedUser.name ? `С возвращением, ${authenticatedUser.name}!` : "Вы уже с нами!"}
+                </h2>
+
+                <p className="text-[14px] text-[#6E6E73] mb-5 leading-snug max-w-[320px]">
+                  Вы уже зарегистрированы в 8ty. Реферальный бонус начисляется новым пользователям при первой регистрации.
+                </p>
+
+                <a
+                  href={TESTFLIGHT_URL}
+                  className="w-full h-[52px] rounded-full bg-[#402BFF] hover:bg-[#3824E5] active:scale-[0.98] transition-all flex items-center justify-center gap-2.5 text-white font-semibold text-[16px] shadow-md shadow-[#402BFF]/20 cursor-pointer"
+                >
+                  <Download className="w-4 h-4 stroke-[2]" />
+                  <span>Открыть приложение</span>
                 </a>
               </>
             )}
