@@ -176,7 +176,7 @@ export const App: React.FC = () => {
                   </a>
                 </div>
               </>
-            ) : authenticatedUser.referralStatus === "registered_web" || authenticatedUser.isNewUser === true ? (
+            ) : authenticatedUser.referralStatus === "registered_web" || authenticatedUser.referralStatus === "rewarded" || authenticatedUser.isNewUser === true ? (
               /* New user (friend) -> +1000 bonuses! */
               <>
                 <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#00FFA3]/20 text-[#008A55] font-semibold text-[13px] mb-3">
