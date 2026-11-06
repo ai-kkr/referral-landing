@@ -14,6 +14,7 @@ import {
   TESTFLIGHT_URL,
 } from "./lib/api";
 import { beginGoogleLogin, exchangeGoogleCode } from "./lib/google-oauth";
+import { signInWithAppleWeb } from "./lib/apple-oauth";
 
 export const App: React.FC = () => {
   const [peekData, setPeekData] = useState<ReferralPeek | null>(null);
@@ -88,9 +89,32 @@ export const App: React.FC = () => {
     }
   };
 
-  const handleAppleClick = () => {
-    // Apple ID sign-in is native to iOS: redirect directly to TestFlight to install and sign in on device
-    window.location.href = TESTFLIGHT_URL;
+  const handleAppleClick = async () => {
+    if (authLoading) return;
+    setAuthLoading(true);
+    setAuthError(null);
+    try {
+      const res = await signInWithAppleWeb();
+      const user: UserSession = {
+        token: res.token,
+        name: res.name || "Друг",
+        email: res.email,
+        isNewUser: res.isNewUser,
+        referralStatus: res.referralStatus,
+        referralMessage: res.referralMessage,
+        inviterName: res.inviterName,
+      };
+      saveUserSession(user);
+      setAuthenticatedUser(user);
+    } catch (err: unknown) {
+      const msg =
+        err instanceof Error ? err.message : "Ошибка авторизации через Apple ID";
+      if (!/popup_closed_by_user/i.test(msg)) {
+        setAuthError(msg);
+      }
+    } finally {
+      setAuthLoading(false);
+    }
   };
 
   const inviterName = peekData?.inviter_name || null;
