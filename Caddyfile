@@ -1,0 +1,18 @@
+:{$PORT:80} {
+    root * /srv/www
+    encode gzip zstd
+
+    # API Proxy to backend (Railway private or public upstream)
+    @api path /api/* /auth/*
+    handle @api {
+        reverse_proxy {$BACKEND_UPSTREAM:https://kkr-travel-production.up.railway.app} {
+            header_up Host {upstream_hostport}
+        }
+    }
+
+    # SPA Fallback
+    handle {
+        try_files {path} /index.html
+        file_server
+    }
+}

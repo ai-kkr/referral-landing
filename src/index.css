@@ -1,0 +1,55 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --color-accent: #402BFF;
+    --color-accent-highlight: #E1FF00;
+    --color-reward: #00FFA3;
+    --color-ink: #0B0B0E;
+    --color-surface-secondary: #F2F2F7;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+}
+
+.font-expanded {
+  font-stretch: 110%;
+  letter-spacing: -0.04em;
+}
+
+@keyframes float-gentle-1 {
+  0%, 100% { transform: translateY(0px) rotate(-16deg); }
+  50% { transform: translateY(-8px) rotate(-14deg); }
+}
+
+@keyframes float-gentle-2 {
+  0%, 100% { transform: translateY(0px) rotate(14deg); }
+  50% { transform: translateY(-10px) rotate(16deg); }
+}
+
+@keyframes float-gentle-3 {
+  0%, 100% { transform: translateY(0px) rotate(-12deg); }
+  50% { transform: translateY(-6px) rotate(-10deg); }
+}
+
+@keyframes float-gentle-4 {
+  0%, 100% { transform: translateY(0px) rotate(5deg); }
+  50% { transform: translateY(-12px) rotate(7deg); }
+}
+
+@keyframes float-gentle-5 {
+  0%, 100% { transform: translateY(0px) rotate(15deg); }
+  50% { transform: translateY(-7px) rotate(13deg); }
+}
+
+.animate-float-1 { animation: float-gentle-1 5s ease-in-out infinite; }
+.animate-float-2 { animation: float-gentle-2 6s ease-in-out infinite 0.7s; }
+.animate-float-3 { animation: float-gentle-3 5.5s ease-in-out infinite 1.2s; }
+.animate-float-4 { animation: float-gentle-4 6.2s ease-in-out infinite 0.3s; }
+.animate-float-5 { animation: float-gentle-5 5.8s ease-in-out infinite 1.8s; }
