@@ -103,9 +103,9 @@ export async function signInWithAppleWeb(): Promise<{
       data.profile?.displayName ||
       (data.profile?.email ? data.profile.email.split("@")[0] : undefined),
     email: email || data.profile?.email,
-    isNewUser: data.isNewUser,
-    referralStatus: data.referralStatus,
-    referralMessage: data.referralMessage,
-    inviterName: data.inviterName,
+    isNewUser: data.isNewUser ?? data.is_new_user,
+    referralStatus: data.referralStatus ?? data.referral_status,
+    referralMessage: data.referralMessage ?? data.referral_message,
+    inviterName: data.inviterName ?? data.inviter_name,
   };
 }
