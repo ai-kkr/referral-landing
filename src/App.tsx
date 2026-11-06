@@ -177,11 +177,16 @@ export const App: React.FC = () => {
                 </div>
               </>
             ) : authenticatedUser.referralStatus === "registered_web" || authenticatedUser.referralStatus === "rewarded" || authenticatedUser.isNewUser === true ? (
-              /* New user (friend) -> +1000 bonuses! */
+              /* Pending referrals are rewarded only after an iOS login. */
               <>
                 <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#00FFA3]/20 text-[#008A55] font-semibold text-[13px] mb-3">
                   <span>✓</span>
-                  <span>+{rewardAmount.toLocaleString("ru-RU")} бонусов зачислено</span>
+                  <span>
+                    +{rewardAmount.toLocaleString("ru-RU")} бонусов
+                    {authenticatedUser.referralStatus === "rewarded"
+                      ? " зачислено"
+                      : " после входа в iOS"}
+                  </span>
                 </div>
 
                 <h2 className="text-[22px] font-bold tracking-tight text-[#0B0B0E] mb-1">
@@ -189,7 +194,9 @@ export const App: React.FC = () => {
                 </h2>
 
                 <p className="text-[14px] text-[#6E6E73] mb-5 leading-snug">
-                  Установите приложение 8ty для iOS и войдите в аккаунт, чтобы активировать бонусы.
+                  {authenticatedUser.referralStatus === "rewarded"
+                    ? "Бонусы уже начислены. Откройте приложение 8ty для iOS."
+                    : "Установите приложение 8ty для iOS и войдите в этот же аккаунт. После первого входа бонусы получат и вы, и пригласивший вас друг."}
                 </p>
 
                 <a
@@ -213,7 +220,7 @@ export const App: React.FC = () => {
                 </h2>
 
                 <p className="text-[14px] text-[#6E6E73] mb-5 leading-snug max-w-[320px]">
-                  Вы уже зарегистрированы в 8ty. Реферальный бонус начисляется новым пользователям при первой регистрации.
+                  Вы уже зарегистрированы в 8ty. Реферальный бонус получают новые пользователи, зарегистрировавшиеся по приглашению, после первого входа в приложение для iOS.
                 </p>
 
                 <a
